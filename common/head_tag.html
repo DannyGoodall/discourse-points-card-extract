@@ -1,0 +1,43 @@
+<script type="text/discourse-plugin" version="0.13.0">
+    var thisExtractVersion = 0;
+ 
+    $.fn.exists = function () {
+        return this.length !== 0;
+    }
+    
+    function addExtract(){
+        // If we've been passed a points_card_extract value in the topic, then insert it
+        // console.log("addExtract() Checking...");
+        var extractDiv = $("div.points-card-extract");
+        if (extractDiv.exists()) {
+            // console.log("extractDiv EXISTS");
+            const container = Discourse.__container__.lookup("controller:topic");
+            const topic = container.model;
+            var pointsCardExtract = "";
+            var pointsCardExtractVersion = 0;
+            if ("points_card_extract" in topic) {
+                pointsCardExtract = topic.points_card_extract;
+                pointsCardExtractVersion = Number(topic.points_card_extract_version);
+                console.log(pointsCardExtract);
+            }
+            if (pointsCardExtract && pointsCardExtractVersion > thisExtractVersion) {
+                extractDiv.html(pointsCardExtract);
+                thisExtractVersion = pointsCardExtractVersion;
+                // If we've made a change, set the maximum width for the cells in the table
+                $('div.md-table table tbody tr td:has(div.points-card-detail-body-detail-col)').css("width", "100%");
+            }
+        };
+    };
+    
+    $( document ).ready( function() {
+        window.setInterval(function () {
+            addExtract();
+        }, 1000);
+    });
+    api.onPageChange((url, title) => {
+        thisExtractVersion = -1;
+        // addExtract();
+        // alert("1002 - Points Card Extract - Page Changed.")
+        // console.log('the page changed to: ' + url + ' and title ' + title);
+    });
+</script>
